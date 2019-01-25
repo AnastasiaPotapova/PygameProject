@@ -2,7 +2,7 @@ import os
 import random
 import pygame
 
-size = width, height = 100, 600
+size = width, height = 500, 500
 screen = pygame.display.set_mode(size)
 
 
@@ -22,17 +22,16 @@ def load_image(name, colorkey=None):
 
 
 class Block(pygame.sprite.Sprite):
-    image = load_image("character.png")
+    image = load_image("block.jpg")
 
-    def __init__(self, g, x, y):
+    def __init__(self, g):
         super().__init__(g)
-        self.image = Creature.image
+        self.image = Block.image
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.x = 0
+        self.rect.y = 280
 
-class Map(pygame.sprite.Group):
-    def level_first(self):
-        pass
+    def update(self):
+        self.rect = self.rect
 
 
