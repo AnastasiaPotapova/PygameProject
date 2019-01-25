@@ -55,10 +55,35 @@ class Block(pygame.sprite.Sprite):
         self.rect = self.rect
 
 
+class Dog(pygame.sprite.Sprite):
+    image_right = load_image("dog_right.png", -1)
+    image_left = load_image("dog_left.png", -1)
+
+    def __init__(self, g):
+        super().__init__(g)
+        self.image_right = Dog.image_right
+        self.image_left = Dog.image_left
+        self.image = self.image_right
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect = self.image.get_rect()
+        self.rect.x = 0
+        self.rect.y = 200
+
+    def update(self):
+        if self.rect.x < 479 and self.image == self.image_right:
+            self.rect = self.rect.move(1, 0)
+        elif self.rect.x > 0 and self.image == self.image_left:
+            self.rect = self.rect.move(-1, 0)
+        if self.rect.x >= 479 - self.rect.width:
+            self.image = self.image_left
+        elif self.rect.x <= 0:
+            self.image = self.image_right
+
+
 class Creature(pygame.sprite.Sprite):
     image = load_image("character.png")
     image_left = load_image("character_left.png")
-    image_right = load_image("character_right.png")
+    image_right = load_image("character_right.png", -1)
     image_down = load_image("character_down.png")
     image_up = load_image("character_up.png")
 
@@ -70,7 +95,7 @@ class Creature(pygame.sprite.Sprite):
         self.rect.x = 0
         self.rect.y = 0
         self.v_x = 10
-        self.v_y = 10
+        self.v_y = 80
 
     def update(self):
         a = [1 if pygame.sprite.collide_mask(self, x) else 0 for x in mm]
@@ -80,28 +105,34 @@ class Creature(pygame.sprite.Sprite):
             self.rect = self.rect.move(0, 1)
 
     def move(self, press):
+        a = [1 if pygame.sprite.collide_mask(self, x) else 0 for x in mm]
         if press[pygame.K_UP]:
-            self.rect = self.rect.move(0, -100)
             self.image = Creature.image_up
+            while self.v_y > 0:
+                self.rect = self.rect.move(0, -self.v_y)
+                self.v_y -= 20
+            self.v_y = 60
         if press[pygame.K_DOWN]:
             self.image = Creature.image_down
-        if press[pygame.K_LEFT]:
+        if press[pygame.K_LEFT] and 1 in a:
             self.rect = self.rect.move(-10, 0)
             self.image = Creature.image_left
-        if press[pygame.K_RIGHT]:
-            self.rect = self.rect.move(10, 0)
+        if press[pygame.K_RIGHT] and 1 in a:
             self.image = Creature.image_right
+            self.rect = self.rect.move(10, 0)
 
     def check(self):
-        return not(0 < self.rect.x < width - 50 or 0 < self.rect.y < height-50)
+        return not (0 < self.rect.x < width - 50 or 0 < self.rect.y < height - 50)
 
 
 end_group = EndGroup()
 group_my = pygame.sprite.Group()
-pers = Creature(group_my)
 mm = []
 for i in range(0, width, 20):
-    mm.append(Block(group_my, i, 280 - i*0.5))
+    mm.append(Block(group_my, i, 280))
+mm.append(Block(group_my, 100, 200))
+pers = Creature(group_my)
+dog = Dog(group_my)
 running = True
 end = End(end_group)
 while running:
@@ -113,9 +144,7 @@ while running:
             # all_sprites.process_event(event)
         if event.type == pygame.KEYDOWN:
             pers.move(pygame.key.get_pressed())
-        # if ballrect.colliderect(bliprect):
     screen.fill((255, 255, 255))
-    group_my.update()
     group_my.update()
     group_my.draw(screen)
     if pers.check():
