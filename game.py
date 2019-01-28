@@ -3,7 +3,7 @@ import random
 import pygame
 
 pygame.init()
-size = width, height = 479, 320
+size = width, height = 800, 600
 screen = pygame.display.set_mode(size)
 
 
@@ -23,13 +23,13 @@ def load_image(name, colorkey=None):
 
 
 class End(pygame.sprite.Sprite):
-    image = load_image('finish.png')
+    image = load_image('final.jpg')
 
     def __init__(self, g):
         super().__init__(g)
         self.image = End.image
         self.rect = self.image.get_rect()
-        self.rect.x = -479
+        self.rect.x = -800
         self.rect.y = 0
 
     def update(self):
@@ -67,14 +67,14 @@ class Dog(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.x = 0
-        self.rect.y = 200
+        self.rect.y = height - 180
 
     def update(self):
-        if self.rect.x < 479 and self.image == self.image_right:
+        if self.rect.x < width and self.image == self.image_right:
             self.rect = self.rect.move(1, 0)
         elif self.rect.x > 0 and self.image == self.image_left:
             self.rect = self.rect.move(-1, 0)
-        if self.rect.x >= 479 - self.rect.width:
+        if self.rect.x >= width - self.rect.width:
             self.image = self.image_left
         elif self.rect.x <= 0:
             self.image = self.image_right
@@ -129,7 +129,7 @@ end_group = EndGroup()
 group_my = pygame.sprite.Group()
 mm = []
 for i in range(0, width, 20):
-    mm.append(Block(group_my, i, 280))
+    mm.append(Block(group_my, i, height - 40))
 mm.append(Block(group_my, 100, 200))
 pers = Creature(group_my)
 dog = Dog(group_my)
