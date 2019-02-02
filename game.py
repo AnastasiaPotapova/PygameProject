@@ -37,7 +37,40 @@ class End(pygame.sprite.Sprite):
             self.rect = self.rect.move(10, 0)
 
 
+class Mouse(pygame.sprite.Sprite):
+    image = load_image('arrow.jpg', -1)
+
+    def __init__(self, group):
+        super().__init__(group)
+        self.image = Mouse.image
+        self.rect = self.image.get_rect()
+        self.rect.x = 0
+        self.rect.y = 0
+
+    def activ(self, a):
+        self.rect.x = a[0]
+        self.rect.y = a[1]
+
+
+class Star(pygame.sprite.Sprite):
+    image = load_image("star.png")
+
+    def __init__(self, g, x, y):
+        super().__init__(g)
+        self.image = Star.image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+    def update(self):
+        self.rect = self.rect
+
+
 class EndGroup(pygame.sprite.Group):
+    pass
+
+
+class MouseGroup(pygame.sprite.Group):
     pass
 
 
@@ -56,8 +89,8 @@ class Block(pygame.sprite.Sprite):
 
 
 class Dog(pygame.sprite.Sprite):
-    image_right = load_image("dog_right.png", -1)
-    image_left = load_image("dog_left.png", -1)
+    image_right = load_image("dog_right.jpg")
+    image_left = load_image("dog_left.jpg")
 
     def __init__(self, g):
         super().__init__(g)
@@ -67,7 +100,7 @@ class Dog(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.x = 0
-        self.rect.y = height - 180
+        self.rect.y = height - 95
 
     def update(self):
         if self.rect.x < width and self.image == self.image_right:
@@ -81,11 +114,10 @@ class Dog(pygame.sprite.Sprite):
 
 
 class Creature(pygame.sprite.Sprite):
-    image = load_image("character.png", -1)
+    image = load_image("character'.jpg", -1)
     image_left = load_image("character_left.png", -1)
     image_right = load_image("character_right.png", -1)
-    image_down = load_image("character_down.png", -1)
-    image_up = load_image("character_up.png", -1)
+    image_up = load_image("character_up.png")
 
     def __init__(self, g):
         super().__init__(g)
@@ -94,72 +126,90 @@ class Creature(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = 0
         self.rect.y = 0
-        self.v_x = 10
-        self.v_y = 80
-        self.jump_count = 25
+        self.jump_count = 15
         self.is_jump = False
+        self.x = 0
+        self.y = 0
 
     def update(self):
-        a = [1 if pygame.sprite.collide_mask(self, x) else 0 for x in mm]
-        if 1 in a:
+        if pygame.sprite.spritecollideany(self, group_my):
             pass
-        elif not(self.is_jump):
+        else:  # not(self.is_jump):
             self.rect = self.rect.move(0, 5)
+        if self.x == 1:
+            if self.rect.x + 5 < width:
+                self.rect = self.rect.move(5, 0)
+            else:
+                self.rect.x = 0
+        if self.x == -1:
+            if self.rect.x - 5 > 0:
+                self.rect = self.rect.move(-5, 0)
+            else:
+                self.rect.x = width - 50
+        if pers.is_jump:
+            pers.jump()
 
     def move(self, press):
-        a = [1 if pygame.sprite.collide_mask(self, x) else 0 for x in mm]
         if press[pygame.K_UP]:
             self.is_jump = True
-
-            #изменение у координаты
-        if press[pygame.K_DOWN]:
-            self.image = Creature.image_down
-        if press[pygame.K_LEFT] and 1 in a:
-            self.rect = self.rect.move(-10, 0)
+            # self.image = Creature.image_up
+            # self.rect.width = self.image.get_rect().width
+            # self.rect.height = self.image.get_rect().height
+        if press[pygame.K_LEFT]:
+            self.x = -1
             self.image = Creature.image_left
-        if press[pygame.K_RIGHT] and 1 in a:
+            self.rect.width = self.image.get_rect().width
+            self.rect.height = self.image.get_rect().height
+        if press[pygame.K_RIGHT]:
             self.image = Creature.image_right
-            self.rect = self.rect.move(10, 0)
+            self.rect.width = self.image.get_rect().width
+            self.rect.height = self.image.get_rect().height
+            self.x = 1
 
     def check(self):
         return not (0 < self.rect.x < width - 50 or 0 < self.rect.y < height - 50)
 
     def jump(self):
         if self.is_jump:
-            if self.jump_count >= -25:
-                dy = int((self.jump_count ** 2) / 15)
+            if self.jump_count >= -15:
+                dy = int((self.jump_count ** 2) / 10)
                 if self.jump_count >= 0:
-                    self.rect.y -= dy
-                else:
-                    self.rect.y += dy
+                    self.rect = self.rect.move(0, -dy)
                 self.jump_count -= 1
             else:
-                self.jump_count = 25
+                self.jump_count = 15
                 self.is_jump = False
 
-#ЕТО СМЭРТЬ
-   # def jump(self):
-   #      if self.is_jump:
-   #          if self.jump_count >= -20:
-   #              dy = (self.jump_count ** 2) // 10
-   #              if self.jump_count > 0:
-   #                  self.rect.y -= dy
-   #              else:
-   #                  self.rect.y += dy
-   #              self.jump_count -= 1
-   #          else:
-   #              self.jump_count = 20
-   #              self.is_jump = False
+
+# ЕТО СМЭРТЬ
+# def jump(self):
+#      if self.is_jump:
+#          if self.jump_count >= -20:
+#              dy = (self.jump_count ** 2) // 10
+#              if self.jump_count > 0:
+#                  self.rect.y -= dy
+#              else:
+#                  self.rect.y += dy
+#              self.jump_count -= 1
+#          else:
+#              self.jump_count = 20
+#              self.is_jump = False
 
 end_group = EndGroup()
 group_my = pygame.sprite.Group()
+pers_group = pygame.sprite.Group()
 mm = []
-for i in range(0, width, 20):
-    mm.append(Block(group_my, i, height - 40))
-pers = Creature(group_my)
 dog = Dog(group_my)
+with open('data\level1.txt', 'r') as x:
+    data = x.read()
+data = [x.split(',') for x in data.split(';')]
+for i in data:
+    mm.append(Block(group_my, int(i[1]), int(i[0])))
+pers = Creature(pers_group)
 running = True
 end = End(end_group)
+mg = MouseGroup()
+mouse = Mouse(mg)
 clock = pygame.time.Clock()
 
 while running:
@@ -172,13 +222,19 @@ while running:
             # all_sprites.process_event(event)
         if event.type == pygame.KEYDOWN:
             pers.move(pygame.key.get_pressed())
+        if event.type == pygame.KEYUP:
+            pers.x = 0
+        if event.type == pygame.MOUSEMOTION:
+            mouse.activ(pygame.mouse.get_pos())
+            pygame.mouse.set_visible(False)
     screen.fill((255, 255, 255))
     group_my.update()
     group_my.draw(screen)
-    if pers.check():
-        end_group.update()
-        end_group.draw(screen)
+    pers_group.update()
+    pers_group.draw(screen)
+    # if pers.check():
+    #     end_group.update()
+    #     end_group.draw(screen)
+    mg.draw(screen)
     pygame.display.flip()
-    if pers.is_jump:
-        pers.jump()
 pygame.quit()
