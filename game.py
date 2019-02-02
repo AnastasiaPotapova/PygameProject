@@ -22,6 +22,18 @@ def load_image(name, colorkey=None):
     return image
 
 
+def pxl(n):
+    return n*50
+
+
+def start_screen():
+    pass
+
+
+def generate_level():
+    pass
+
+
 class End(pygame.sprite.Sprite):
     image = load_image('final.jpg')
 
@@ -35,6 +47,20 @@ class End(pygame.sprite.Sprite):
     def update(self):
         if self.rect.x < 0:
             self.rect = self.rect.move(10, 0)
+
+
+class Door(pygame.sprite.Sprite):
+    image = load_image("door.jpg")
+
+    def __init__(self, g, x, y):
+        super().__init__(g)
+        self.image = Door.image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+    def update(self):
+        self.rect = self.rect
 
 
 class Mouse(pygame.sprite.Sprite):
@@ -89,8 +115,8 @@ class Block(pygame.sprite.Sprite):
 
 
 class Dog(pygame.sprite.Sprite):
-    image_right = load_image("dog_right.jpg")
-    image_left = load_image("dog_left.jpg")
+    image_right = load_image("dog_right.jpg", -1)
+    image_left = load_image("dog_left.jpg", -1)
 
     def __init__(self, g):
         super().__init__(g)
@@ -167,7 +193,8 @@ class Creature(pygame.sprite.Sprite):
             self.x = 1
 
     def check(self):
-        return not (0 < self.rect.x < width - 50 or 0 < self.rect.y < height - 50)
+        return not (0 < self.rect.x < width - 50 or 0 < self.rect.y < height - 50) or\
+               pygame.sprite.spritecollideany(self, door_group)
 
     def jump(self):
         if self.is_jump:
@@ -198,18 +225,26 @@ class Creature(pygame.sprite.Sprite):
 end_group = EndGroup()
 group_my = pygame.sprite.Group()
 pers_group = pygame.sprite.Group()
+star_group = pygame.sprite.Group()
+door_group = pygame.sprite.Group()
 mm = []
 dog = Dog(group_my)
 with open('data\level1.txt', 'r') as x:
     data = x.read()
-data = [x.split(',') for x in data.split(';')]
-for i in data:
+data = data.split('\n')
+lst = [[],[]]
+lst[0] = [x.split(',') for x in data[0].split(';')]
+lst[1] = [x.split(',') for x in data[1].split(';')]
+for i in lst[0]:
     mm.append(Block(group_my, int(i[1]), int(i[0])))
+for i in lst[1]:
+    Star(star_group, int(i[1]), int(i[0]))
 pers = Creature(pers_group)
 running = True
 end = End(end_group)
 mg = MouseGroup()
 mouse = Mouse(mg)
+door = Door(door_group, 400, height - 100)
 clock = pygame.time.Clock()
 
 while running:
@@ -228,13 +263,17 @@ while running:
             mouse.activ(pygame.mouse.get_pos())
             pygame.mouse.set_visible(False)
     screen.fill((255, 255, 255))
+    door_group.update()
+    door_group.draw(screen)
     group_my.update()
     group_my.draw(screen)
     pers_group.update()
     pers_group.draw(screen)
-    # if pers.check():
-    #     end_group.update()
-    #     end_group.draw(screen)
+    star_group.update()
+    star_group.draw(screen)
+    if pers.check():
+        end_group.update()
+        end_group.draw(screen)
     mg.draw(screen)
     pygame.display.flip()
 pygame.quit()
