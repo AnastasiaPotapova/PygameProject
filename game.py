@@ -3,8 +3,10 @@ import random
 import pygame
 
 pygame.init()
-size = width, height = 800, 600
+size = width, height = WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode(size)
+clock = pygame.time.Clock()
+FPS = 60
 
 
 def load_image(name, colorkey=None):
@@ -23,11 +25,37 @@ def load_image(name, colorkey=None):
 
 
 def pxl(n):
-    return n*50
+    return n * 50
 
 
 def start_screen():
-    pass
+    intro_text = ["ЗАСТАВКА", "",
+                  "Правила игры",
+                  "Если в правилах несколько строк,",
+                  "приходится выводить их построчно"]
+
+    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('black'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN or \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                return True
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 def generate_level():
@@ -193,7 +221,7 @@ class Creature(pygame.sprite.Sprite):
             self.x = 1
 
     def check(self):
-        return not (0 < self.rect.x < width - 50 or 0 < self.rect.y < height - 50) or\
+        return not (0 < self.rect.x < width - 50 or 0 < self.rect.y < height - 50) or \
                pygame.sprite.spritecollideany(self, door_group)
 
     def jump(self):
@@ -206,7 +234,6 @@ class Creature(pygame.sprite.Sprite):
             else:
                 self.jump_count = 15
                 self.is_jump = False
-
 
 # ЕТО СМЭРТЬ
 # def jump(self):
@@ -222,58 +249,60 @@ class Creature(pygame.sprite.Sprite):
 #              self.jump_count = 20
 #              self.is_jump = False
 
-end_group = EndGroup()
-group_my = pygame.sprite.Group()
-pers_group = pygame.sprite.Group()
-star_group = pygame.sprite.Group()
-door_group = pygame.sprite.Group()
-mm = []
-dog = Dog(group_my)
-with open('data\level1.txt', 'r') as x:
-    data = x.read()
-data = data.split('\n')
-lst = [[],[]]
-lst[0] = [x.split(',') for x in data[0].split(';')]
-lst[1] = [x.split(',') for x in data[1].split(';')]
-for i in lst[0]:
-    mm.append(Block(group_my, int(i[1]), int(i[0])))
-for i in lst[1]:
-    Star(star_group, int(i[1]), int(i[0]))
-pers = Creature(pers_group)
-running = True
-end = End(end_group)
-mg = MouseGroup()
-mouse = Mouse(mg)
-door = Door(door_group, 400, height - 100)
-clock = pygame.time.Clock()
 
-while running:
-    clock.tick(30)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            print('+')
-            # all_sprites.process_event(event)
-        if event.type == pygame.KEYDOWN:
-            pers.move(pygame.key.get_pressed())
-        if event.type == pygame.KEYUP:
-            pers.x = 0
-        if event.type == pygame.MOUSEMOTION:
-            mouse.activ(pygame.mouse.get_pos())
-            pygame.mouse.set_visible(False)
-    screen.fill((255, 255, 255))
-    door_group.update()
-    door_group.draw(screen)
-    group_my.update()
-    group_my.draw(screen)
-    pers_group.update()
-    pers_group.draw(screen)
-    star_group.update()
-    star_group.draw(screen)
-    if pers.check():
-        end_group.update()
-        end_group.draw(screen)
-    mg.draw(screen)
-    pygame.display.flip()
+if start_screen():
+    end_group = EndGroup()
+    group_my = pygame.sprite.Group()
+    pers_group = pygame.sprite.Group()
+    star_group = pygame.sprite.Group()
+    door_group = pygame.sprite.Group()
+    mm = []
+    dog = Dog(group_my)
+    with open('data\level1.txt', 'r') as x:
+        data = x.read()
+    data = data.split('\n')
+    lst = [[],[]]
+    lst[0] = [x.split(',') for x in data[0].split(';')]
+    lst[1] = [x.split(',') for x in data[1].split(';')]
+    for i in lst[0]:
+        mm.append(Block(group_my, int(i[1]), int(i[0])))
+    for i in lst[1]:
+        Star(star_group, int(i[1]), int(i[0]))
+    pers = Creature(pers_group)
+    running = True
+    end = End(end_group)
+    mg = MouseGroup()
+    mouse = Mouse(mg)
+    door = Door(door_group, 400, height - 100)
+    clock = pygame.time.Clock()
+    while running:
+        clock.tick(30)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                print('+')
+                # all_sprites.process_event(event)
+            if event.type == pygame.KEYDOWN:
+                pers.move(pygame.key.get_pressed())
+            if event.type == pygame.KEYUP:
+                pers.x = 0
+            if event.type == pygame.MOUSEMOTION:
+                mouse.activ(pygame.mouse.get_pos())
+                pygame.mouse.set_visible(False)
+        screen.fill((255, 255, 255))
+        door_group.update()
+        door_group.draw(screen)
+        group_my.update()
+        group_my.draw(screen)
+        pers_group.update()
+        pers_group.draw(screen)
+        star_group.update()
+        star_group.draw(screen)
+        if pers.check():
+            end_group.update()
+            end_group.draw(screen)
+        mg.draw(screen)
+        pygame.display.flip()
+
 pygame.quit()
