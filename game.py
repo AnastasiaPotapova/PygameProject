@@ -80,6 +80,7 @@ def game(level_name):
         mm.append(Block(group_my, int(i[1]), int(i[0])))
     for i in lst[1]:
         Star(star_group, int(i[0]), int(i[1]))
+    k = 0
     running = True
     clock = pygame.time.Clock()
     while running:
@@ -98,21 +99,27 @@ def game(level_name):
                 mouse.activ(pygame.mouse.get_pos())
                 pygame.mouse.set_visible(False)
         screen.fill((255, 255, 255))
-        door_group.update()
-        door_group.draw(screen)
-        group_my.update()
-        group_my.draw(screen)
-        pers_group.update()
-        pers_group.draw(screen)
-        star_group.check()
-        star_group.update()
-        star_group.draw(screen)
-        if pers.bonuse_counter > 20:
-            boss_group.update()
-            boss_group.draw(screen)
         if pers.check():
             end_group.update()
             end_group.draw(screen)
+        else:
+            door_group.update()
+            door_group.draw(screen)
+            group_my.update()
+            group_my.draw(screen)
+            pers_group.update()
+            pers_group.draw(screen)
+            star_group.check()
+            star_group.update()
+            star_group.draw(screen)
+            if pers.bonuse_counter > 20:
+                boss_group.update()
+                boss_group.draw(screen)
+            if pers.bonuse_counter != k:
+                Boss(boss_group)
+            k = pers.bonuse_counter
+        if end.check():
+            running = False
         mg.draw(screen)
         pygame.display.flip()
 
@@ -148,6 +155,9 @@ class End(pygame.sprite.Sprite):
     def update(self):
         if self.rect.x < 0:
             self.rect = self.rect.move(10, 0)
+
+    def check(self):
+        return self.rect.x == 0
 
 
 class Door(pygame.sprite.Sprite):
@@ -311,7 +321,7 @@ class Creature(pygame.sprite.Sprite):
             self.x = 1
 
     def check(self):
-        return not (0 < self.rect.x < width - 50 or 0 < self.rect.y < height - 50) or \
+        return not (0 <= self.rect.x < width - 50 or 0 <= self.rect.y < height - 50) or \
                pygame.sprite.spritecollideany(self, door_group)
 
     def jump(self):
@@ -334,7 +344,7 @@ class Boss(pygame.sprite.Sprite):
         self.image = Boss.image
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = 0
+        self.rect.x = 800
         self.rect.y = 0
         self.v = 1
 
