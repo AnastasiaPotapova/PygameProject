@@ -76,19 +76,6 @@ def game():
     lst = [[], []]
     lst[0] = [x.split(',') for x in data[0].split(';')]
     lst[1] = [x.split(',') for x in data[1].split(';')]
-    end_group = EndGroup()
-    group_my = BlockGroup()
-    pers_group = pygame.sprite.Group()
-    star_group = StarGroup()
-    door_group = pygame.sprite.Group()
-    boss_group = pygame.sprite.Group()
-    boss = Boss(boss_group)
-    mg = MouseGroup()
-    dog = Dog(boss_group)
-    pers = Creature(pers_group)
-    end = End(end_group)
-    mouse = Mouse(mg)
-    door = Door(door_group, 400, height - 100)
     for i in lst[0]:
         mm.append(Block(group_my, int(i[1]), int(i[0])))
     for i in lst[1]:
@@ -433,6 +420,19 @@ btn = Button(btn_group, 10, 400)
 btn_2 = Button(btn_group, 10, 400)
 while True:
     start_screen()
+    end_group = EndGroup()
+    group_my = BlockGroup()
+    pers_group = pygame.sprite.Group()
+    star_group = StarGroup()
+    door_group = pygame.sprite.Group()
+    boss_group = pygame.sprite.Group()
+    boss = Boss(boss_group)
+    mg = MouseGroup()
+    dog = Dog(boss_group)
+    pers = Creature(pers_group)
+    end = End(end_group)
+    mouse = Mouse(mg)
+    door = Door(door_group, 400, height - 100)
     game()
     end_screen()
 
