@@ -322,7 +322,7 @@ class Creature(pygame.sprite.Sprite):
 
     def check(self):
         return not (0 <= self.rect.x < width - 50 or 0 <= self.rect.y < height - 50) or \
-               pygame.sprite.spritecollideany(self, door_group)
+               pygame.sprite.spritecollideany(self, door_group) or pygame.sprite.spritecollideany(self, boss_group)
 
     def jump(self):
         if self.is_jump:
@@ -375,7 +375,7 @@ btn_group = pygame.sprite.Group()
 boss_group = pygame.sprite.Group()
 boss = Boss(boss_group)
 mg = MouseGroup()
-dog = Dog(group_my)
+dog = Dog(boss_group)
 pers = Creature(pers_group)
 end = End(end_group)
 mouse = Mouse(mg)
