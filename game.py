@@ -58,7 +58,7 @@ def start_screen():
             #     pygame.mouse.set_visible(False)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if btn.process_event(event):
-                    return 'data/level1.txt'
+                    return True
         # mg.update()
         # mg.draw(screen)
         btn_group.update()
@@ -68,20 +68,34 @@ def start_screen():
         clock.tick(FPS)
 
 
-def game(level_name):
+def game():
     mm = []
-    with open(level_name, 'r') as x:
+    with open('data/level1.txt', 'r') as x:
         data = x.read()
     data = data.split('\n')
     lst = [[], []]
     lst[0] = [x.split(',') for x in data[0].split(';')]
     lst[1] = [x.split(',') for x in data[1].split(';')]
+    end_group = EndGroup()
+    group_my = BlockGroup()
+    pers_group = pygame.sprite.Group()
+    star_group = StarGroup()
+    door_group = pygame.sprite.Group()
+    boss_group = pygame.sprite.Group()
+    boss = Boss(boss_group)
+    mg = MouseGroup()
+    dog = Dog(boss_group)
+    pers = Creature(pers_group)
+    end = End(end_group)
+    mouse = Mouse(mg)
+    door = Door(door_group, 400, height - 100)
     for i in lst[0]:
         mm.append(Block(group_my, int(i[1]), int(i[0])))
     for i in lst[1]:
         Star(star_group, int(i[0]), int(i[1]))
     running = True
     clock = pygame.time.Clock()
+    k = 0
     while running:
         clock.tick(30)
         for event in pygame.event.get():
@@ -98,23 +112,51 @@ def game(level_name):
                 mouse.activ(pygame.mouse.get_pos())
                 pygame.mouse.set_visible(False)
         screen.fill((255, 255, 255))
-        door_group.update()
-        door_group.draw(screen)
-        group_my.update()
-        group_my.draw(screen)
-        pers_group.update()
-        pers_group.draw(screen)
-        star_group.check()
-        star_group.update()
-        star_group.draw(screen)
-        if pers.bonuse_counter > 20:
-            boss_group.update()
-            boss_group.draw(screen)
         if pers.check():
             end_group.update()
             end_group.draw(screen)
+        else:
+            door_group.update()
+            door_group.draw(screen)
+            group_my.update()
+            group_my.draw(screen)
+            pers_group.update()
+            pers_group.draw(screen)
+            star_group.check()
+            star_group.update()
+            star_group.draw(screen)
+            if pers.bonuse_counter > 20:
+                boss_group.update()
+                boss_group.draw(screen)
+            if pers.bonuse_counter != k:
+                Boss(boss_group)
+            k = pers.bonuse_counter
+        if end.check():
+            running = False
         mg.draw(screen)
         pygame.display.flip()
+
+
+def end_screen():
+    fon = pygame.transform.scale(load_image('final.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            # if event.type == pygame.MOUSEMOTION:
+            #     mouse.activ(pygame.mouse.get_pos())
+            #     pygame.mouse.set_visible(False)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if btn_2.process_event(event):
+                    return 'data/level1.txt'
+        # mg.update()
+        # mg.draw(screen)
+        btn_group.update()
+        btn_group.draw(screen)
+
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 class Button(pygame.sprite.Sprite):
@@ -148,6 +190,9 @@ class End(pygame.sprite.Sprite):
     def update(self):
         if self.rect.x < 0:
             self.rect = self.rect.move(10, 0)
+
+    def check(self):
+        return self.rect.x == 0
 
 
 class Door(pygame.sprite.Sprite):
@@ -224,6 +269,9 @@ class Block(pygame.sprite.Sprite):
     def update(self):
         self.rect = self.rect
 
+    def check(self, x, y):
+        return self.rect.collidepoint(self, x, y)
+
 
 class Dog(pygame.sprite.Sprite):
     image_right = load_image("dog_right.jpg", -1)
@@ -275,12 +323,12 @@ class Creature(pygame.sprite.Sprite):
             pass
         else:  # not(self.is_jump):
             self.rect = self.rect.move(0, 5)
-        if self.x == 1 and self.k == pygame.sprite.spritecollideany(self, group_my):
+        if self.x == 1:# and self.k == pygame.sprite.spritecollideany(self, group_my):
             if self.rect.x + 5 < width:
                 self.rect = self.rect.move(5, 0)
             else:
                 self.rect.x = 0
-        if self.x == -1 and self.k == pygame.sprite.spritecollideany(self, group_my):
+        if self.x == -1:# and self.k == pygame.sprite.spritecollideany(self, group_my):
             if self.rect.x - 5 > 0:
                 self.rect = self.rect.move(-5, 0)
             else:
@@ -294,25 +342,26 @@ class Creature(pygame.sprite.Sprite):
             self.bonuse_counter += 10
 
     def move(self, press):
+        x = self.rect.x
+        y = self.rect.y
         if press[pygame.K_UP]:
             self.is_jump = True
             # self.image = Creature.image_up
             # self.rect.width = self.image.get_rect().width
             # self.rect.height = self.image.get_rect().height
-        if press[pygame.K_LEFT]:
+        if press[pygame.K_LEFT]:# and not(group_my.check(x, y)):
             self.x = -1
             self.image = Creature.image_left
             self.rect.width = self.image.get_rect().width
             self.rect.height = self.image.get_rect().height
-        if press[pygame.K_RIGHT]:
+        if press[pygame.K_RIGHT]:# and not(group_my.check(x, y)):
             self.image = Creature.image_right
             self.rect.width = self.image.get_rect().width
             self.rect.height = self.image.get_rect().height
             self.x = 1
 
     def check(self):
-        return not (0 < self.rect.x < width - 50 or 0 < self.rect.y < height - 50) or \
-               pygame.sprite.spritecollideany(self, door_group)
+        return pygame.sprite.spritecollideany(self, door_group) #or pygame.sprite.spritecollideany(self, boss_group)
 
     def jump(self):
         if self.is_jump:
@@ -355,25 +404,36 @@ class Boss(pygame.sprite.Sprite):
             self.v = 1
 
 
+class BlockGroup(pygame.sprite.Group):
+    def check(self, x, y):
+        k = 0
+        for sprite in self.sprites():
+            if sprite.check(x, y):
+                k += 1
+                break
+        if k:
+            return True
+
 
 end_group = EndGroup()
-group_my = pygame.sprite.Group()
+group_my = BlockGroup()
 pers_group = pygame.sprite.Group()
 star_group = StarGroup()
 door_group = pygame.sprite.Group()
-btn_group = pygame.sprite.Group()
 boss_group = pygame.sprite.Group()
 boss = Boss(boss_group)
 mg = MouseGroup()
-dog = Dog(group_my)
+dog = Dog(boss_group)
 pers = Creature(pers_group)
 end = End(end_group)
 mouse = Mouse(mg)
 door = Door(door_group, 400, height - 100)
+btn_group = pygame.sprite.Group()
 btn = Button(btn_group, 10, 400)
-k = None
-while not(k):
-    k = start_screen()
-game(k)
+btn_2 = Button(btn_group, 10, 400)
+while True:
+    start_screen()
+    game()
+    end_screen()
 
 pygame.quit()
