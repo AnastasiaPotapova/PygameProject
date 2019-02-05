@@ -1,5 +1,4 @@
 import os
-import random
 import pygame
 
 pygame.init()
@@ -59,10 +58,11 @@ def start_screen():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if btn.process_event(event):
                     return True
+            pygame.mouse.set_visible(True)
         # mg.update()
         # mg.draw(screen)
-        btn_group.update()
-        btn_group.draw(screen)
+        btn_group_start.update()
+        btn_group_start.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -137,10 +137,14 @@ def end_screen():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if btn_2.process_event(event):
                     return 'data/level1.txt'
+            pygame.mouse.set_visible(True)
         # mg.update()
         # mg.draw(screen)
-        btn_group.update()
-        btn_group.draw(screen)
+        font = pygame.font.Font(None, 50)
+        text = font.render("Score: {}".format(str(pers.bonuse_counter)), 1, (100, 255, 100))
+        screen.blit(text, (320, 320))
+        btn_group_end.update()
+        btn_group_end.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -149,9 +153,9 @@ def end_screen():
 class Button(pygame.sprite.Sprite):
     image = load_image('start.png')
 
-    def __init__(self, g, x, y):
+    def __init__(self, g, x, y, k):
         super().__init__(g)
-        self.image = Button.image
+        self.image = load_image(k)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -348,7 +352,7 @@ class Creature(pygame.sprite.Sprite):
             self.x = 1
 
     def check(self):
-        return pygame.sprite.spritecollideany(self, door_group) #or pygame.sprite.spritecollideany(self, boss_group)
+        return pygame.sprite.spritecollideany(self, door_group) or pygame.sprite.spritecollideany(self, boss_group)
 
     def jump(self):
         if self.is_jump:
@@ -362,6 +366,10 @@ class Creature(pygame.sprite.Sprite):
                 self.is_jump = False
 
 
+class Enemy(pygame.sprite.Sprite):
+    pass
+
+
 class Boss(pygame.sprite.Sprite):
     image = load_image('ghost.jpg', -1)
 
@@ -370,7 +378,7 @@ class Boss(pygame.sprite.Sprite):
         self.image = Boss.image
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = 0
+        self.rect.x = 800
         self.rect.y = 0
         self.v = 1
 
@@ -415,9 +423,10 @@ pers = Creature(pers_group)
 end = End(end_group)
 mouse = Mouse(mg)
 door = Door(door_group, 400, height - 100)
-btn_group = pygame.sprite.Group()
-btn = Button(btn_group, 10, 400)
-btn_2 = Button(btn_group, 10, 400)
+btn_group_start = pygame.sprite.Group()
+btn_group_end = pygame.sprite.Group()
+btn = Button(btn_group_start, 10, 400, 'start.png')
+btn_2 = Button(btn_group_end, 190, 400, 'restart.png')
 while True:
     start_screen()
     end_group = EndGroup()
