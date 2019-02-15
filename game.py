@@ -98,7 +98,7 @@ def game_1():
             if event.type == pygame.MOUSEMOTION:
                 mouse.activ(pygame.mouse.get_pos())
                 pygame.mouse.set_visible(False)
-        screen.fill((255, 255, 255))
+        screen.fill((0, 0, 0))
         if pers.check():
             end_group.update()
             end_group.draw(screen)
@@ -149,10 +149,9 @@ def game_2():
             if event.type == pygame.KEYUP:
                 pers.x = 0
                 en.x = 0
-            if event.type == pygame.MOUSEMOTION:
-                mouse.activ(pygame.mouse.get_pos())
-                pygame.mouse.set_visible(False)
-        screen.fill((255, 255, 255))
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                print(pygame.mouse.get_pos())
+        screen.fill((0, 0, 0))
         if pers.check() or en.check():
             end_group.update()
             end_group.draw(screen)
@@ -290,7 +289,7 @@ class MouseGroup(pygame.sprite.Group):
 
 
 class Block(pygame.sprite.Sprite):
-    image = load_image("block.jpg")
+    image = load_image("block.png")
 
     def __init__(self, g, x, y):
         super().__init__(g)
@@ -332,7 +331,7 @@ class Dog(pygame.sprite.Sprite):
 
 
 class Creature(pygame.sprite.Sprite):
-    image = load_image("character'.jpg", -1)
+    image = load_image("character_right.png", -1)
     image_left = load_image("character_left.png", -1)
     image_right = load_image("character_right.png", -1)
     image_up = load_image("character_up.png")
@@ -409,7 +408,7 @@ class Creature(pygame.sprite.Sprite):
 
 
 class Enemy(pygame.sprite.Sprite):
-    image = load_image("dog_right.png", -1)
+    image = load_image("dog_left.png", -1)
     image_left = load_image("dog_left.png", -1)
     image_right = load_image("dog_right.png", -1)
 
@@ -418,7 +417,7 @@ class Enemy(pygame.sprite.Sprite):
         self.image = Enemy.image
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = 0
+        self.rect.x = 750
         self.rect.y = 0
         self.jump_count = 15
         self.is_jump = False
@@ -478,8 +477,8 @@ class Enemy(pygame.sprite.Sprite):
 
 
 class Boss(pygame.sprite.Sprite):
-    image = load_image('ghost.png', -1)
-    image_angry = load_image('angry_ghost.png', -1)
+    image = load_image('ghost.png')
+    image_angry = load_image('angry_ghost.png')
 
     def __init__(self, g):
         super().__init__(g)
@@ -521,7 +520,7 @@ class BlockGroup(pygame.sprite.Group):
 
 
 class Bullet(pygame.sprite.Sprite):
-    image = load_image('bullet.png', -1)
+    image = load_image('bullet.png')
 
     def __init__(self, g, x, y, vel):
         super().__init__(g)
@@ -589,7 +588,10 @@ while True:
         game_1()
         end_screen()
     elif k == 2:
+        boss_group.empty()
         door_group.empty()
+        mg.empty()
+        star_group.empty()
         end_group = EndGroup()
         pers_group = pygame.sprite.Group()
         pers = Creature(pers_group)
@@ -599,5 +601,3 @@ while True:
         end = End(end_group)
         game_2()
         end_screen()
-
-
