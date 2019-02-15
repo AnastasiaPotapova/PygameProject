@@ -1,5 +1,6 @@
 import os
 import pygame
+import random
 
 pygame.init()
 size = width, height = WIDTH, HEIGHT = 800, 600
@@ -111,10 +112,10 @@ def game_1():
             star_group.check()
             star_group.update()
             star_group.draw(screen)
-            if pers.bonuse_counter > 20:
+            if pers.bonuse_counter > 0:
                 boss_group.update()
                 boss_group.draw(screen)
-            if pers.bonuse_counter != k:
+            if pers.bonuse_counter != k and k%2 == 0:
                 Boss(boss_group)
             k = pers.bonuse_counter
         if end.check():
@@ -177,15 +178,10 @@ def end_screen():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            # if event.type == pygame.MOUSEMOTION:
-            #     mouse.activ(pygame.mouse.get_pos())
-            #     pygame.mouse.set_visible(False)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if btn_restart.process_event(event):
                     return 'data/level1.txt'
             pygame.mouse.set_visible(True)
-        # mg.update()
-        # mg.draw(screen)
         font = pygame.font.Font(None, 50)
         text = font.render("Score: {}".format(str(pers.bonuse_counter)), 1, (100, 255, 100))
         screen.blit(text, (320, 320))
@@ -478,7 +474,7 @@ class Enemy(pygame.sprite.Sprite):
                 Bullet(patrons_for_pers, self.rect.x - Bullet.image.get_rect().width, self.rect.y, self.last_motion)
 
     def check(self):
-        return pygame.sprite.spritecollideany(self, door_group) or pygame.sprite.spritecollideany(self, boss_group)
+        return pygame.sprite.spritecollideany(self, patrons_for_pers)
 
 
 class Boss(pygame.sprite.Sprite):
@@ -490,7 +486,7 @@ class Boss(pygame.sprite.Sprite):
         self.image = Boss.image
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = 800
+        self.rect.x = random.randrange(375, 425)
         self.rect.y = 0
         self.v = 1
 
@@ -506,7 +502,7 @@ class Boss(pygame.sprite.Sprite):
             self.rect = self.rect.move(0, -self.v)
 
         if abs(pers.rect.x - self.rect.x) <= 150 and abs(pers.rect.y - self.rect.y) <= 150:
-            self.v = 3
+            self.v = 2
             self.image = Boss.image_angry
         else:
             self.v = 1
@@ -576,8 +572,6 @@ btn_2 = Button(btn_group_start, 10, 450, 'start.png')
 btn_restart = Button(btn_group_end, 190, 400, 'restart.png')
 while True:
     k = start_screen()
-    patrons_for_pers = Bullets()
-    patrons_for_enem = Bullets()
     if k == 1:
         end_group = EndGroup()
         group_my = BlockGroup()
@@ -593,14 +587,17 @@ while True:
         mouse = Mouse(mg)
         door = Door(door_group, 400, height - 100)
         game_1()
+        end_screen()
     elif k == 2:
-        door = Door(door_group, 600, 800)
+        door_group.empty()
+        end_group = EndGroup()
         pers_group = pygame.sprite.Group()
         pers = Creature(pers_group)
         en = Enemy(pers_group)
+        patrons_for_pers = Bullets()
+        patrons_for_enem = Bullets()
+        end = End(end_group)
         game_2()
-    # elif k == 3:
-    #    game_3()
-    end_screen()
+        end_screen()
 
-pygame.quit()
+
