@@ -29,43 +29,44 @@ def terminate():
 
 
 def start_screen():
-    intro_text = ["GrayCat", "",
-                  "Правила игры",
-                  "Действия игры происходят в сером и мрачном мире,",
-                  "где все цвета забрали злые собаки.",
-                  "Но некоторые цвета сбежали из-за заточения ввиде звезд!",
-                  "Но им нужна помощь", "Ваша задача забрать все звезды и сделать мир цветным!"]
+    try:
+        intro_text = ["GrayCat", "",
+                      "Правила игры",
+                      "Действия игры происходят в сером и мрачном мире,",
+                      "где все цвета забрали злые духи.",
+                      "Но некоторые цвета сбежали из-за заточения ввиде звезд!",
+                      "Но им нужна помощь", "Ваша задача забрать все звезды и сделать мир цветным!"]
 
-    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
-    screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('black'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if btn_1.process_event(event):
-                    return 1
-                if btn_2.process_event(event):
-                    return 2
-                # if btn_3.process_event(event):
-                #    return 3
-            pygame.mouse.set_visible(True)
-        btn_group_start.update()
-        btn_group_start.draw(screen)
-
-        pygame.display.flip()
-        clock.tick(FPS)
+        fon = pygame.transform.scale(load_image('fon.png'), (WIDTH, HEIGHT))
+        screen.blit(fon, (0, 0))
+        font = pygame.font.Font(None, 30)
+        text_coord = 50
+        for line in intro_text:
+            string_rendered = font.render(line, 1, pygame.Color('black'))
+            intro_rect = string_rendered.get_rect()
+            text_coord += 10
+            intro_rect.top = text_coord
+            intro_rect.x = 10
+            text_coord += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if btn_1.process_event(event):
+                        return 1
+                    if btn_2.process_event(event):
+                        return 2
+                    # if btn_3.process_event(event):
+                    #    return 3
+                pygame.mouse.set_visible(True)
+            btn_group_start.update()
+            btn_group_start.draw(screen)
+            pygame.display.flip()
+            clock.tick(FPS)
+    except Exception:
+        pass
 
 
 def game_1():
@@ -171,24 +172,27 @@ def game_2():
 
 
 def end_screen():
-    fon = pygame.transform.scale(load_image('final.jpg'), (WIDTH, HEIGHT))
-    screen.blit(fon, (0, 0))
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if btn_restart.process_event(event):
-                    return 'data/level1.txt'
-            pygame.mouse.set_visible(True)
-        font = pygame.font.Font(None, 50)
-        text = font.render("Score: {}".format(str(pers.bonuse_counter)), 1, (100, 255, 100))
-        screen.blit(text, (320, 320))
-        btn_group_end.update()
-        btn_group_end.draw(screen)
+    try:
+        fon = pygame.transform.scale(load_image('final.png'), (WIDTH, HEIGHT))
+        screen.blit(fon, (0, 0))
 
-        pygame.display.flip()
-        clock.tick(FPS)
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if btn_restart.process_event(event):
+                        return 'data/level1.txt'
+                pygame.mouse.set_visible(True)
+            font = pygame.font.Font(None, 50)
+            text = font.render("Score: {}".format(str(pers.bonuse_counter)), 1, (100, 255, 100))
+            screen.blit(text, (320, 320))
+            btn_group_end.update()
+            btn_group_end.draw(screen)
+            pygame.display.flip()
+            clock.tick(FPS)
+    except Exception:
+        pass
 
 
 class Button(pygame.sprite.Sprite):
@@ -210,7 +214,7 @@ class Button(pygame.sprite.Sprite):
 
 
 class End(pygame.sprite.Sprite):
-    image = load_image('final.jpg')
+    image = load_image('final.png')
 
     def __init__(self, g):
         super().__init__(g)
@@ -228,7 +232,7 @@ class End(pygame.sprite.Sprite):
 
 
 class Door(pygame.sprite.Sprite):
-    image = load_image("door.jpg")
+    image = load_image("door.png")
 
     def __init__(self, g, x, y):
         super().__init__(g)
@@ -306,8 +310,8 @@ class Block(pygame.sprite.Sprite):
 
 
 class Dog(pygame.sprite.Sprite):
-    image_right = load_image("dog_right.png", -1)
-    image_left = load_image("dog_left.png", -1)
+    image_right = load_image("ghost.png", -1)
+    image_left = load_image("angry_ghost.png", -1)
 
     def __init__(self, g):
         super().__init__(g)
@@ -318,23 +322,25 @@ class Dog(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 0
         self.rect.y = height - 95
+        self.v = 5
 
     def update(self):
         if self.rect.x < width and self.image == self.image_right:
-            self.rect = self.rect.move(5, 0)
+            self.rect = self.rect.move(self.v, 0)
         elif self.rect.x > 0 and self.image == self.image_left:
-            self.rect = self.rect.move(-5, 0)
+            self.rect = self.rect.move(-self.v, 0)
         if self.rect.x >= width - self.rect.width:
             self.image = self.image_left
+            self.v = 8
         elif self.rect.x <= 0:
             self.image = self.image_right
+            self.v = 5
 
 
 class Creature(pygame.sprite.Sprite):
     image = load_image("character_right.png", -1)
     image_left = load_image("character_left.png", -1)
     image_right = load_image("character_right.png", -1)
-    image_up = load_image("character_up.png")
 
     def __init__(self, g):
         super().__init__(g)
@@ -468,9 +474,9 @@ class Enemy(pygame.sprite.Sprite):
             self.last_motion = 1
         if press[pygame.K_r]:
             if self.last_motion == 1:
-                Bullet(patrons_for_pers, self.rect.x + self.rect.width, self.rect.y, self.last_motion)
+                Bullet(patrons_for_enem, self.rect.x + self.rect.width, self.rect.y, self.last_motion)
             else:
-                Bullet(patrons_for_pers, self.rect.x - Bullet.image.get_rect().width, self.rect.y, self.last_motion)
+                Bullet(patrons_for_enem, self.rect.x - Bullet.image.get_rect().width, self.rect.y, self.last_motion)
 
     def check(self):
         return pygame.sprite.spritecollideany(self, patrons_for_pers)
@@ -569,7 +575,11 @@ btn_group_end = pygame.sprite.Group()
 btn_1 = Button(btn_group_start, 10, 350, 'start.png')
 btn_2 = Button(btn_group_start, 10, 450, 'start.png')
 btn_restart = Button(btn_group_end, 190, 400, 'restart.png')
-while True:
+playing = True
+while playing:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            playing = False
     k = start_screen()
     if k == 1:
         end_group = EndGroup()
