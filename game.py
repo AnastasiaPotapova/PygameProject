@@ -108,6 +108,9 @@ def game_1():
             door_group.draw(screen)
             group_my.update()
             group_my.draw(screen)
+            if pers.bonuse_counter:
+                patrons_for_pers.update()
+                patrons_for_pers.draw(screen)
             pers_group.update()
             pers_group.draw(screen)
             star_group.check()
@@ -116,9 +119,12 @@ def game_1():
             if pers.bonuse_counter > 0:
                 boss_group.update()
                 boss_group.draw(screen)
-            if pers.bonuse_counter != k and k%2 == 0:
+            if pers.bonuse_counter > k:
                 Boss(boss_group)
             k = pers.bonuse_counter
+            if star_group.check():
+                for i in lst[1]:
+                    Star(star_group, int(i[0]), int(i[1]))
         if end.check():
             running = False
         mg.draw(screen)
@@ -139,6 +145,7 @@ def game_2():
         Star(star_group, int(i[0]), int(i[1]))
     running = True
     clock = pygame.time.Clock()
+    pers.bonuse_counter = 1000000
     while running:
         clock.tick(30)
         for event in pygame.event.get():
@@ -185,7 +192,7 @@ def end_screen():
                         return 'data/level1.txt'
                 pygame.mouse.set_visible(True)
             font = pygame.font.Font(None, 50)
-            text = font.render("Score: {}".format(str(pers.bonuse_counter)), 1, (100, 255, 100))
+            text = font.render("Score: {}".format(str(pers.bonuse)), 1, (100, 255, 100))
             screen.blit(text, (320, 320))
             btn_group_end.update()
             btn_group_end.draw(screen)
@@ -261,10 +268,15 @@ class Mouse(pygame.sprite.Sprite):
 
 
 class StarGroup(pygame.sprite.Group):
-    def check(self):
+    def update(self):
         for sprite in self.sprites():
             if sprite.check():
                 sprite.kill()
+            else:
+                sprite.update()
+
+    def check(self):
+        return len(self.sprites()) == 0
 
 
 class Star(pygame.sprite.Sprite):
@@ -356,6 +368,7 @@ class Creature(pygame.sprite.Sprite):
         self.bonuse_counter = 0
         self.k = False
         self.last_motion = 1
+        self.bonuse = 0
 
     def update(self):
         if pygame.sprite.spritecollideany(self, group_my):
@@ -384,7 +397,9 @@ class Creature(pygame.sprite.Sprite):
                 self.jump_count = 15
                 self.is_jump = False
         if pygame.sprite.spritecollideany(self, star_group):
-            self.bonuse_counter += 10
+            self.bonuse_counter += 5
+            self.bonuse += 10
+
 
     def move(self, press):
         if press[pygame.K_UP]:
@@ -401,11 +416,12 @@ class Creature(pygame.sprite.Sprite):
             self.rect.height = self.image.get_rect().height
             self.x = 1
             self.last_motion = 1
-        if press[pygame.K_p]:
+        if press[pygame.K_p] and self.bonuse_counter:
             if self.last_motion == 1:
                 Bullet(patrons_for_pers, self.rect.x + self.rect.width, self.rect.y, self.last_motion)
             else:
                 Bullet(patrons_for_pers, self.rect.x - Bullet.image.get_rect().width, self.rect.y, self.last_motion)
+            self.bonuse_counter -= 1
 
     def check(self):
         return pygame.sprite.spritecollideany(self, patrons_for_enem) or pygame.sprite.spritecollideany(self,
@@ -491,8 +507,8 @@ class Boss(pygame.sprite.Sprite):
         self.image = Boss.image
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = random.randrange(375, 425)
-        self.rect.y = 0
+        self.rect.x = random.randrange(100, 750)
+        self.rect.y = random.randrange(50, 500)
         self.v = 1
 
     def update(self):
@@ -547,8 +563,19 @@ class Bullet(pygame.sprite.Sprite):
 class Bullets(pygame.sprite.Group):
     def update(self):
         for i in self.sprites():
-            if pygame.sprite.spritecollideany(i, pers_group) or pygame.sprite.spritecollideany(i,
-                                                                                               group_my) or i.check():
+            if pygame.sprite.spritecollideany(i, pers_group) \
+                    or pygame.sprite.spritecollideany(i, group_my) \
+                    or i.check() \
+                    or pygame.sprite.spritecollideany(i, boss_group):
+                i.kill()
+            else:
+                i.update()
+
+
+class BossGroup(pygame.sprite.Group):
+    def update(self):
+        for i in self.sprites():
+            if pygame.sprite.spritecollideany(i, patrons_for_pers):
                 i.kill()
             else:
                 i.update()
@@ -559,7 +586,7 @@ group_my = BlockGroup()
 pers_group = pygame.sprite.Group()
 star_group = StarGroup()
 door_group = pygame.sprite.Group()
-boss_group = pygame.sprite.Group()
+boss_group = BossGroup()
 patrons_for_pers = Bullets()
 patrons_for_enem = Bullets()
 boss = Boss(boss_group)
@@ -587,7 +614,7 @@ while playing:
         pers_group = pygame.sprite.Group()
         star_group = StarGroup()
         door_group = pygame.sprite.Group()
-        boss_group = pygame.sprite.Group()
+        boss_group = BossGroup()
         boss = Boss(boss_group)
         mg = MouseGroup()
         dog = Dog(boss_group)
@@ -595,6 +622,7 @@ while playing:
         end = End(end_group)
         mouse = Mouse(mg)
         door = Door(door_group, 400, height - 100)
+        patrons_for_pers = Bullets()
         game_1()
         end_screen()
     elif k == 2:
